@@ -77,6 +77,9 @@ interface AppContextValue {
   updatePlanPrice: (variantId: string, price: number) => Promise<void>;
   addCategoria: (name: string) => Promise<string>;
   uploadAvatar: (studentId: string, file: File) => Promise<void>;
+  deleteStudent: (studentId: string) => Promise<void>;
+  deletePayment: (paymentId: string) => Promise<void>;
+  deleteExpense: (expenseId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -107,7 +110,15 @@ export function AppProvider({
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const data = await queries.fetchAllData(userId);
+      let data = await queries.fetchAllData(userId);
+
+      const needsSeed = data.plans.length === 0 || data.categories.length === 0;
+      if (needsSeed) {
+        if (data.plans.length === 0) await queries.seedDefaultPlans(userId);
+        if (data.categories.length === 0) await queries.seedDefaultCategories(userId);
+        data = await queries.fetchAllData(userId);
+      }
+
       setStudents(data.students);
       setExpenses(data.expenses);
       setCategories(data.categories);
@@ -236,6 +247,34 @@ export function AppProvider({
     [userId, refresh],
   );
 
+  const deleteStudent = useCallback(
+    async (studentId: string) => {
+      await queries.deleteStudent(studentId);
+      await refresh();
+      setOverlay(null);
+      flashToast("Aluno excluído");
+    },
+    [refresh, flashToast],
+  );
+
+  const deletePayment = useCallback(
+    async (paymentId: string) => {
+      await queries.deletePayment(paymentId);
+      await refresh();
+      flashToast("Pagamento excluído");
+    },
+    [refresh, flashToast],
+  );
+
+  const deleteExpense = useCallback(
+    async (expenseId: string) => {
+      await queries.deleteExpense(expenseId);
+      await refresh();
+      flashToast("Gasto excluído");
+    },
+    [refresh, flashToast],
+  );
+
   const value: AppContextValue = {
     userId,
     students,
@@ -266,6 +305,9 @@ export function AppProvider({
     updatePlanPrice,
     addCategoria,
     uploadAvatar,
+    deleteStudent,
+    deletePayment,
+    deleteExpense,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

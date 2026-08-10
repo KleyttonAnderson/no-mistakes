@@ -75,6 +75,8 @@ export interface Movement {
   tagColor: string;
   value: number;
   positive: boolean;
+  kind: "payment" | "expense";
+  sourceId: string;
 }
 
 export function movementsForMonth(
@@ -97,6 +99,8 @@ export function movementsForMonth(
           tagColor: methodColor(p.method),
           value: p.value,
           positive: true,
+          kind: "payment",
+          sourceId: p.id,
         }),
       ),
   );
@@ -111,6 +115,8 @@ export function movementsForMonth(
         tagColor: categoryColor(names, e.category),
         value: e.value,
         positive: false,
+        kind: "expense",
+        sourceId: e.id,
       }),
     );
   movements.sort((a, b) => b.date.localeCompare(a.date));

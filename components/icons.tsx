@@ -69,6 +69,14 @@ export function FinanceiroIcon({ color }: { color: string }) {
   );
 }
 
+export function TrashIcon({ color = "currentColor", size = 14 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M2 4h12M5.5 4V2.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V4M6.5 7.5v4M9.5 7.5v4M3.5 4l.6 8.4a1 1 0 0 0 1 .93h5.8a1 1 0 0 0 1-.93L12.5 4" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ConfigIcon({ color }: { color: string }) {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18">

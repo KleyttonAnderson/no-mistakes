@@ -8,9 +8,16 @@ import { Avatar } from "@/components/Avatar";
 import { BackIcon } from "@/components/icons";
 
 export function Ficha({ studentId }: { studentId: string }) {
-  const { students, openOverlay, marcarTreino } = useApp();
+  const { students, openOverlay, marcarTreino, deleteStudent } = useApp();
   const st = students.find((s) => s.id === studentId);
   if (!st) return null;
+
+  function handleDelete() {
+    if (!st) return;
+    if (window.confirm(`Excluir ${st.name}? Isso apaga também todo o histórico de pagamentos dele(a). Essa ação não pode ser desfeita.`)) {
+      deleteStudent(st.id);
+    }
+  }
 
   const ps = paymentStatus(st);
   const ts = treinoStatus(st);
@@ -84,6 +91,13 @@ export function Ficha({ studentId }: { studentId: string }) {
         style={{ marginTop: 12, textAlign: "center", padding: 16, borderRadius: 16, background: GRADIENT_ACCENT, color: "#fff", fontSize: 14.5, fontWeight: 800, cursor: "pointer", boxShadow: GLOW_ACCENT }}
       >
         Registrar pagamento
+      </div>
+
+      <div
+        onClick={handleDelete}
+        style={{ marginTop: 10, textAlign: "center", padding: 14, borderRadius: 16, background: "rgba(255,107,74,0.1)", color: "#ff6b4a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
+      >
+        Excluir aluno
       </div>
     </div>
   );

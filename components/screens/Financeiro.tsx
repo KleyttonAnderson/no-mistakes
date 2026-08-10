@@ -5,10 +5,22 @@ import { useApp } from "@/lib/app-context";
 import { CARD, CARD_SHADOW, CARD_SHADOW_SM, GRADIENT_ACCENT, MUTED, TEXT } from "@/lib/colors";
 import { fmtBRL, fmtDateShort, monthLabel } from "@/lib/format";
 import { categoryFunnel, movementsForMonth, sumExpensesForMonth, sumPaymentsForMonth, activeStudents } from "@/lib/selectors";
-import { ChevronLeftSmall, ChevronRightSmall } from "@/components/icons";
+import { ChevronLeftSmall, ChevronRightSmall, TrashIcon } from "@/components/icons";
+import type { Movement } from "@/lib/selectors";
 
 export function Financeiro() {
-  const { students, expenses, categories, financeMonth, prevMonth, nextMonth, openOverlay } = useApp();
+  const { students, expenses, categories, financeMonth, prevMonth, nextMonth, openOverlay, deletePayment, deleteExpense } =
+    useApp();
+
+  function handleDeleteMovement(m: Movement) {
+    const label = m.kind === "payment" ? "este pagamento" : "este gasto";
+    if (!window.confirm(`Excluir ${label} (${m.desc})? Essa ação não pode ser desfeita.`)) return;
+    if (m.kind === "payment") {
+      deletePayment(m.sourceId);
+    } else {
+      deleteExpense(m.sourceId);
+    }
+  }
 
   const finEntradas = sumPaymentsForMonth(students, financeMonth);
   const finGastos = sumExpensesForMonth(expenses, financeMonth);
@@ -114,8 +126,16 @@ export function Financeiro() {
               </div>
             </div>
           </div>
-          <div className="tabular-nums" style={{ fontSize: 14.5, fontWeight: 700, color: TEXT, flexShrink: 0 }}>
-            {(m.positive ? "+ " : "– ") + fmtBRL(m.value)}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <div className="tabular-nums" style={{ fontSize: 14.5, fontWeight: 700, color: TEXT }}>
+              {(m.positive ? "+ " : "– ") + fmtBRL(m.value)}
+            </div>
+            <div
+              onClick={() => handleDeleteMovement(m)}
+              style={{ padding: 6, borderRadius: 8, color: "rgba(243,242,242,0.35)", cursor: "pointer" }}
+            >
+              <TrashIcon />
+            </div>
           </div>
         </div>
       ))}
