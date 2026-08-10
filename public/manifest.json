@@ -1,0 +1,13 @@
+{
+  "name": "Central No Mistakes Consultoria",
+  "short_name": "No Mistakes",
+  "description": "Gestão de alunos, pagamentos, treinos e financeiro.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080807",
+  "theme_color": "#141312",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/logo-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
