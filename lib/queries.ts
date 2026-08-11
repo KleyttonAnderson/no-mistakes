@@ -149,6 +149,106 @@ export async function updatePlanVariantPrice(variantId: string, price: number) {
   if (error) throw error;
 }
 
+export async function deleteStudent(studentId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("students").delete().eq("id", studentId);
+  if (error) throw error;
+}
+
+export async function deletePayment(paymentId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("payments").delete().eq("id", paymentId);
+  if (error) throw error;
+}
+
+export async function deleteExpense(expenseId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("expenses").delete().eq("id", expenseId);
+  if (error) throw error;
+}
+
+const DEFAULT_CATEGORIES = [
+  "Academia",
+  "Ferramentas",
+  "Marketing",
+  "Transporte",
+  "Pessoal/Empresa",
+  "Outros",
+];
+
+const DEFAULT_PLANS = [
+  {
+    name: "Plano Light",
+    variants: [
+      { name: "Mensal", price: 347, detail: null as string | null },
+      {
+        name: "Trimestral",
+        price: 697,
+        detail: "3x R$ 232,33 no cartão · R$ 697,00 à vista no PIX",
+      },
+      {
+        name: "Semestral",
+        price: 1200,
+        detail: "6x R$ 200,00 no cartão · R$ 1.200,00 à vista no PIX",
+      },
+    ],
+  },
+  {
+    name: "Plano Premium",
+    variants: [
+      { name: "Mensal", price: 516.9, detail: null as string | null },
+      {
+        name: "Trimestral",
+        price: 1036.8,
+        detail: "3x R$ 371,65 no cartão · R$ 1.036,80 à vista no PIX",
+      },
+      {
+        name: "Semestral",
+        price: 1879.6,
+        detail: "6x R$ 346,82 no cartão · R$ 1.879,60 à vista no cartão",
+      },
+    ],
+  },
+  {
+    name: "Plano Presencial",
+    variants: [
+      { name: "Mensal", price: 347, detail: null as string | null },
+      { name: "Trimestral", price: 697, detail: null as string | null },
+      { name: "Semestral", price: 1200, detail: null as string | null },
+    ],
+  },
+];
+
+export async function seedDefaultCategories(userId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("categories").insert(
+    DEFAULT_CATEGORIES.map((name, i) => ({ user_id: userId, name, sort_order: i })),
+  );
+  if (error) throw error;
+}
+
+export async function seedDefaultPlans(userId: string) {
+  const supabase = createClient();
+  for (const [i, plan] of DEFAULT_PLANS.entries()) {
+    const { data: planRow, error: planError } = await supabase
+      .from("plans")
+      .insert({ user_id: userId, name: plan.name, sort_order: i })
+      .select()
+      .single();
+    if (planError) throw planError;
+    const { error: variantsError } = await supabase.from("plan_variants").insert(
+      plan.variants.map((v, vi) => ({
+        plan_id: planRow.id,
+        name: v.name,
+        price: v.price,
+        detail: v.detail,
+        sort_order: vi,
+      })),
+    );
+    if (variantsError) throw variantsError;
+  }
+}
+
 export async function uploadAvatar(userId: string, studentId: string, file: File) {
   const supabase = createClient();
   const ext = file.name.split(".").pop();
