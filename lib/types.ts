@@ -11,6 +11,27 @@ export interface Payment {
   status: string;
 }
 
+export interface WorkoutItem {
+  id: string;
+  student_id: string;
+  exercise_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: string;
+  target_weight: number | null;
+  order_index: number;
+}
+
+export interface LoadLog {
+  id: string;
+  student_id: string;
+  exercise_id: string;
+  date: string;
+  weight: number;
+  reps: number | null;
+  sets: number | null;
+}
+
 export interface Student {
   id: string;
   name: string;
@@ -26,6 +47,8 @@ export interface Student {
   last_training_update: string | null;
   next_training_update: string | null;
   payments: Payment[];
+  workout_items: WorkoutItem[];
+  load_logs: LoadLog[];
 }
 
 export interface Expense {
@@ -67,6 +90,8 @@ export type OverlayState =
   | { type: "novoGasto" }
   | { type: "novoAluno" }
   | { type: "planos" }
+  | { type: "treino"; studentId: string }
+  | { type: "progressao"; studentId: string; workoutItemId: string }
   | null;
 
 export type AlunosFilter = "Todos" | "Online" | "Presencial" | "Ativos" | "Inativos";

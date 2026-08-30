@@ -1,6 +1,6 @@
 # Central No Mistakes Consultoria
 
-App de gestão para personal trainer/consultor: alunos, pagamentos, treinos e financeiro. Construído com Next.js (App Router, React 19, Tailwind v4) e Supabase (banco de dados Postgres + autenticação).
+App de gestão para personal trainer/consultor: alunas, pagamentos, treinos (com progressão de carga) e financeiro. Construído com Next.js (App Router, React 19, Tailwind v4) e Supabase (banco de dados Postgres + autenticação).
 
 ## Stack
 
@@ -12,8 +12,9 @@ App de gestão para personal trainer/consultor: alunos, pagamentos, treinos e fi
 
 1. Crie uma conta gratuita em [supabase.com](https://supabase.com) e crie um novo projeto.
 2. Em **Project Settings > API**, copie a **Project URL** e a chave **anon public**.
-3. Em **SQL Editor**, crie uma nova query, cole o conteúdo do arquivo [`supabase/schema.sql`](./supabase/schema.sql) e execute (**Run**). Isso cria as tabelas, políticas de segurança (RLS), o bucket de fotos dos alunos e o gatilho que cria automaticamente categorias e planos padrão para cada novo usuário.
+3. Em **SQL Editor**, crie uma nova query, cole o conteúdo do arquivo [`supabase/schema.sql`](./supabase/schema.sql) e execute (**Run**). Isso cria as tabelas, políticas de segurança (RLS), o bucket de fotos dos alunos, o gatilho que cria automaticamente categorias e planos padrão para cada novo usuário, e as tabelas de treino (exercícios, plano de treino e progressão de carga).
 4. (Opcional) Em **Authentication > Providers**, desative "Confirm email" se quiser testar login sem precisar confirmar e-mail durante o desenvolvimento.
+5. **Projeto já existente** (criado antes da funcionalidade de treino)? Rode também [`supabase/migration_treino.sql`](./supabase/migration_treino.sql) no SQL Editor — ele só adiciona as tabelas novas (`exercises`, `workout_items`, `load_logs`) sem tocar no restante do banco.
 
 ## 2. Configurar variáveis de ambiente
 
@@ -45,9 +46,10 @@ Abra [http://localhost:3000](http://localhost:3000). Como não existe usuário a
 
 ## Funcionalidades
 
-- **Dashboard**: alunos ativos (split presencial/online), navegador de mês, receita por origem, gastos/saldo/a receber, alertas de pendências (pagamentos atrasados/a vencer, treinos atrasados/a atualizar).
-- **Alunos**: filtros por tipo/status, cadastro de aluno, foto de perfil (upload/drag-and-drop), status de pagamento e treino.
-- **Ficha do aluno**: dados, plano, treino (para alunos online), histórico de pagamentos, registrar novo pagamento.
+- **Dashboard**: alunas ativas (split presencial/online), navegador de mês, receita por origem, gastos/saldo/a receber, alertas de pendências (pagamentos atrasados/a vencer, treinos atrasados/a atualizar).
+- **Alunas**: filtros por tipo/status, cadastro de aluna, foto de perfil (upload/drag-and-drop), status de pagamento e treino.
+- **Ficha da aluna (dashboard individual)**: dados, plano, plano de treino atual com carga prescrita, histórico de pagamentos, registrar novo pagamento.
+- **Treino**: monte o plano de exercícios de cada aluna (séries, repetições, carga), registre a carga de cada sessão e acompanhe a **evolução de carga** em um gráfico por exercício, com histórico completo de registros.
 - **Financeiro**: navegador de mês compartilhado com o Dashboard, funil de gastos por categoria, lista de movimentações, lançar pagamento/gasto.
 - **Planos**: preços editáveis inline por plano e variante (mensal/trimestral/semestral).
 - Autenticação por e-mail/senha via Supabase Auth; cada conta só enxerga seus próprios dados (Row Level Security).
@@ -55,11 +57,12 @@ Abra [http://localhost:3000](http://localhost:3000). Como não existe usuário a
 ## Estrutura do projeto
 
 ```
-app/                 rotas (login, callback de auth, página principal)
-components/          AppShell, telas (screens/) e overlays (overlays/)
-lib/                 supabase (client/server/middleware), queries, contexto de app,
-                     formatação, cores/tokens, tipos e seletores de dados derivados
-supabase/schema.sql  schema completo do banco (rodar no SQL Editor do Supabase)
+app/                        rotas (login, callback de auth, página principal)
+components/                AppShell, telas (screens/), overlays (overlays/) e LoadChart (gráfico de progressão)
+lib/                        supabase (client/server/middleware), queries, contexto de app,
+                            formatação, cores/tokens, tipos e seletores de dados derivados
+supabase/schema.sql         schema completo do banco (rodar no SQL Editor do Supabase)
+supabase/migration_treino.sql  migração incremental do módulo de treino, para bancos já existentes
 ```
 
 ## Observações

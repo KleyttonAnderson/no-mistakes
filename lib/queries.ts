@@ -1,5 +1,52 @@
 import { createClient } from "@/lib/supabase/client";
-import type { Category, Expense, Plan, Student } from "@/lib/types";
+import type { Category, Expense, LoadLog, Plan, Student, WorkoutItem } from "@/lib/types";
+
+type WorkoutItemRow = {
+  id: string;
+  student_id: string;
+  exercise_id: string;
+  sets: number;
+  reps: string;
+  target_weight: number | null;
+  order_index: number;
+  exercise: { name: string } | null;
+};
+
+type LoadLogRow = {
+  id: string;
+  student_id: string;
+  exercise_id: string;
+  date: string;
+  weight: number;
+  reps: number | null;
+  sets: number | null;
+  exercise: { name: string } | null;
+};
+
+function mapWorkoutItem(row: WorkoutItemRow): WorkoutItem {
+  return {
+    id: row.id,
+    student_id: row.student_id,
+    exercise_id: row.exercise_id,
+    exercise_name: row.exercise?.name ?? "Exercício",
+    sets: row.sets,
+    reps: row.reps,
+    target_weight: row.target_weight,
+    order_index: row.order_index,
+  };
+}
+
+function mapLoadLog(row: LoadLogRow): LoadLog {
+  return {
+    id: row.id,
+    student_id: row.student_id,
+    exercise_id: row.exercise_id,
+    date: row.date,
+    weight: row.weight,
+    reps: row.reps,
+    sets: row.sets,
+  };
+}
 
 export async function fetchAllData(userId: string) {
   const supabase = createClient();
@@ -7,7 +54,9 @@ export async function fetchAllData(userId: string) {
   const [studentsRes, expensesRes, categoriesRes, plansRes] = await Promise.all([
     supabase
       .from("students")
-      .select("*, payments(*)")
+      .select(
+        "*, payments(*), workout_items(*, exercise:exercises(name)), load_logs(*, exercise:exercises(name))",
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
     supabase
@@ -37,6 +86,12 @@ export async function fetchAllData(userId: string) {
     payments: (s.payments ?? []).sort((a: { date: string }, b: { date: string }) =>
       b.date.localeCompare(a.date),
     ),
+    workout_items: ((s.workout_items ?? []) as WorkoutItemRow[])
+      .map(mapWorkoutItem)
+      .sort((a, b) => a.order_index - b.order_index),
+    load_logs: ((s.load_logs ?? []) as LoadLogRow[])
+      .map(mapLoadLog)
+      .sort((a, b) => b.date.localeCompare(a.date)),
   }));
 
   const expenses: Expense[] = expensesRes.data ?? [];
@@ -140,6 +195,95 @@ export async function markTreinoAtualizado(
     .from("students")
     .update({ last_training_update: lastUpdate, next_training_update: nextUpdate })
     .eq("id", studentId);
+  if (error) throw error;
+}
+
+async function findOrCreateExercise(userId: string, name: string) {
+  const supabase = createClient();
+  const trimmed = name.trim();
+  const { data: existing, error: findError } = await supabase
+    .from("exercises")
+    .select("id")
+    .eq("user_id", userId)
+    .ilike("name", trimmed)
+    .maybeSingle();
+  if (findError) throw findError;
+  if (existing) return existing.id;
+
+  const { data: created, error: createError } = await supabase
+    .from("exercises")
+    .insert({ user_id: userId, name: trimmed })
+    .select("id")
+    .single();
+  if (createError) throw createError;
+  return created.id;
+}
+
+export async function addWorkoutItem(
+  userId: string,
+  input: { studentId: string; exerciseName: string; sets: number; reps: string; targetWeight: number | null; orderIndex: number },
+) {
+  const exerciseId = await findOrCreateExercise(userId, input.exerciseName);
+  const supabase = createClient();
+  const { error } = await supabase.from("workout_items").insert({
+    student_id: input.studentId,
+    exercise_id: exerciseId,
+    sets: input.sets,
+    reps: input.reps,
+    target_weight: input.targetWeight,
+    order_index: input.orderIndex,
+  });
+  if (error) throw error;
+}
+
+export async function updateWorkoutItem(
+  itemId: string,
+  input: { sets: number; reps: string; targetWeight: number | null },
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("workout_items")
+    .update({ sets: input.sets, reps: input.reps, target_weight: input.targetWeight })
+    .eq("id", itemId);
+  if (error) throw error;
+}
+
+export async function deleteWorkoutItem(itemId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("workout_items").delete().eq("id", itemId);
+  if (error) throw error;
+}
+
+export async function addLoadLog(input: {
+  studentId: string;
+  exerciseId: string;
+  workoutItemId: string;
+  date: string;
+  weight: number;
+  reps: number | null;
+  sets: number | null;
+}) {
+  const supabase = createClient();
+  const { error: logError } = await supabase.from("load_logs").insert({
+    student_id: input.studentId,
+    exercise_id: input.exerciseId,
+    date: input.date,
+    weight: input.weight,
+    reps: input.reps,
+    sets: input.sets,
+  });
+  if (logError) throw logError;
+
+  const { error: itemError } = await supabase
+    .from("workout_items")
+    .update({ target_weight: input.weight })
+    .eq("id", input.workoutItemId);
+  if (itemError) throw itemError;
+}
+
+export async function deleteLoadLog(logId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("load_logs").delete().eq("id", logId);
   if (error) throw error;
 }
 

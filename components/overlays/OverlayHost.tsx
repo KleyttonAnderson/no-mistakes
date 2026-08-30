@@ -6,6 +6,8 @@ import { Pagamento } from "@/components/overlays/Pagamento";
 import { NovoGasto } from "@/components/overlays/NovoGasto";
 import { NovoAluno } from "@/components/overlays/NovoAluno";
 import { Planos } from "@/components/overlays/Planos";
+import { Treino } from "@/components/overlays/Treino";
+import { Progressao } from "@/components/overlays/Progressao";
 
 export function OverlayHost() {
   const { overlay } = useApp();
@@ -28,6 +30,10 @@ export function OverlayHost() {
       {overlay.type === "novoGasto" && <NovoGasto />}
       {overlay.type === "novoAluno" && <NovoAluno />}
       {overlay.type === "planos" && <Planos />}
+      {overlay.type === "treino" && <Treino studentId={overlay.studentId} />}
+      {overlay.type === "progressao" && (
+        <Progressao studentId={overlay.studentId} workoutItemId={overlay.workoutItemId} />
+      )}
     </div>
   );
 }

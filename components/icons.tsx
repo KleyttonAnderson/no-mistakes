@@ -77,6 +77,19 @@ export function TrashIcon({ color = "currentColor", size = 14 }: { color?: strin
   );
 }
 
+export function TreinoIcon({ color }: { color: string }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18">
+      <path
+        d="M2 9h1.6M14.4 9H16M4.8 6v6M13.2 6v6M4.8 9h8.4"
+        stroke={color}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function ConfigIcon({ color }: { color: string }) {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18">

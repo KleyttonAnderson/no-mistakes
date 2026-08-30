@@ -106,6 +106,54 @@ export interface Database {
         > & { id?: string };
         Update: Partial<Database["public"]["Tables"]["plan_variants"]["Row"]>;
       };
+      exercises: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          muscle_group: string | null;
+          created_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["exercises"]["Row"],
+          "id" | "created_at" | "muscle_group"
+        > & { id?: string; muscle_group?: string | null };
+        Update: Partial<Database["public"]["Tables"]["exercises"]["Row"]>;
+      };
+      workout_items: {
+        Row: {
+          id: string;
+          student_id: string;
+          exercise_id: string;
+          sets: number;
+          reps: string;
+          target_weight: number | null;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["workout_items"]["Row"],
+          "id" | "created_at" | "target_weight"
+        > & { id?: string; target_weight?: number | null };
+        Update: Partial<Database["public"]["Tables"]["workout_items"]["Row"]>;
+      };
+      load_logs: {
+        Row: {
+          id: string;
+          student_id: string;
+          exercise_id: string;
+          date: string;
+          weight: number;
+          reps: number | null;
+          sets: number | null;
+          created_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["load_logs"]["Row"],
+          "id" | "created_at" | "reps" | "sets"
+        > & { id?: string; reps?: number | null; sets?: number | null };
+        Update: Partial<Database["public"]["Tables"]["load_logs"]["Row"]>;
+      };
     };
   };
 }

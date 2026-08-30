@@ -1,11 +1,11 @@
 "use client";
 
 import { useApp } from "@/lib/app-context";
-import { ATIVO_C, CARD, CARD_SHADOW_SM, GRADIENT_ACCENT, GLOW_ACCENT, INATIVO_C, ONLINE_C, PRESENCIAL_C, TEXT, methodColor } from "@/lib/colors";
+import { ACCENT_LIGHT, ATIVO_C, CARD, CARD_SHADOW_SM, GRADIENT_ACCENT, GLOW_ACCENT, INATIVO_C, MUTED, ONLINE_C, PRESENCIAL_C, TEXT, methodColor } from "@/lib/colors";
 import { fmtBRL, fmtDateShort } from "@/lib/format";
 import { paymentStatus, tagStyle, treinoStatus } from "@/lib/status";
 import { Avatar } from "@/components/Avatar";
-import { BackIcon } from "@/components/icons";
+import { BackIcon, ChevronRight } from "@/components/icons";
 
 export function Ficha({ studentId }: { studentId: string }) {
   const { students, openOverlay, marcarTreino, deleteStudent } = useApp();
@@ -53,8 +53,48 @@ export function Ficha({ studentId }: { studentId: string }) {
         <Row label="Próximo vencimento" value={fmtDateShort(st.next_due_date)} valueColor={tagStyle(ps.level === "off" ? "off" : ps.level).color} valueWeight={800} last />
       </Section>
 
+      <div style={{ borderRadius: 18, background: CARD, padding: "4px 16px", marginBottom: 14, boxShadow: CARD_SHADOW_SM }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 12, paddingBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "rgba(243,242,242,0.5)", textTransform: "uppercase" }}>
+            Treino
+          </div>
+          <div
+            onClick={() => openOverlay({ type: "treino", studentId: st.id })}
+            style={{ fontSize: 11.5, fontWeight: 800, color: "#ff9783", cursor: "pointer" }}
+          >
+            {st.workout_items.length > 0 ? "Editar" : "+ Montar treino"}
+          </div>
+        </div>
+        {st.workout_items.map((item, i) => (
+          <div
+            key={item.id}
+            onClick={() => openOverlay({ type: "progressao", studentId: st.id, workoutItemId: item.id })}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 0", borderTop: i === 0 ? "none" : "1px solid rgba(243,242,242,0.08)", cursor: "pointer" }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: TEXT }}>{item.exercise_name}</div>
+              <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>
+                {item.sets}x {item.reps}
+              </div>
+            </div>
+            {item.target_weight != null && (
+              <div style={{ fontSize: 14, fontWeight: 800, color: ACCENT_LIGHT }}>
+                {item.target_weight.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} kg
+              </div>
+            )}
+            <ChevronRight />
+          </div>
+        ))}
+        {st.workout_items.length === 0 && (
+          <div style={{ paddingBottom: 14, color: "rgba(243,242,242,0.5)", fontSize: 13.5 }}>
+            Nenhum exercício cadastrado ainda.
+          </div>
+        )}
+        {st.workout_items.length > 0 && <div style={{ height: 4 }} />}
+      </div>
+
       {st.type === "Online" && (
-        <Section title="Treino">
+        <Section title="Atualização do plano">
           <Row label="Última atualização" value={fmtDateShort(st.last_training_update)} />
           <Row label="Próxima atualização" value={fmtDateShort(st.next_training_update)} valueColor={tsTag?.color} valueWeight={800} noBorder />
           <div

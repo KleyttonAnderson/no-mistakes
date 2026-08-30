@@ -80,6 +80,29 @@ interface AppContextValue {
   deleteStudent: (studentId: string) => Promise<void>;
   deletePayment: (paymentId: string) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
+  addWorkoutItem: (input: {
+    studentId: string;
+    exerciseName: string;
+    sets: number;
+    reps: string;
+    targetWeight: number | null;
+  }) => Promise<void>;
+  updateWorkoutItem: (
+    studentId: string,
+    itemId: string,
+    input: { sets: number; reps: string; targetWeight: number | null },
+  ) => Promise<void>;
+  deleteWorkoutItem: (studentId: string, itemId: string) => Promise<void>;
+  registrarCarga: (input: {
+    studentId: string;
+    exerciseId: string;
+    workoutItemId: string;
+    date: string;
+    weight: number;
+    reps: number | null;
+    sets: number | null;
+  }) => Promise<void>;
+  deleteLoadLog: (logId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -275,6 +298,73 @@ export function AppProvider({
     [refresh, flashToast],
   );
 
+  const bumpTreinoDates = useCallback(
+    async (studentId: string) => {
+      await queries.markTreinoAtualizado(studentId, today, addMonthsISO(today, 1));
+    },
+    [today],
+  );
+
+  const addWorkoutItem = useCallback(
+    async (input: { studentId: string; exerciseName: string; sets: number; reps: string; targetWeight: number | null }) => {
+      const student = students.find((s) => s.id === input.studentId);
+      const orderIndex = student?.workout_items.length ?? 0;
+      await queries.addWorkoutItem(userId, { ...input, orderIndex });
+      await bumpTreinoDates(input.studentId);
+      await refresh();
+      flashToast("Exercício adicionado");
+    },
+    [userId, students, bumpTreinoDates, refresh, flashToast],
+  );
+
+  const updateWorkoutItem = useCallback(
+    async (studentId: string, itemId: string, input: { sets: number; reps: string; targetWeight: number | null }) => {
+      await queries.updateWorkoutItem(itemId, input);
+      await bumpTreinoDates(studentId);
+      await refresh();
+      flashToast("Treino atualizado");
+    },
+    [bumpTreinoDates, refresh, flashToast],
+  );
+
+  const deleteWorkoutItem = useCallback(
+    async (studentId: string, itemId: string) => {
+      await queries.deleteWorkoutItem(itemId);
+      await bumpTreinoDates(studentId);
+      await refresh();
+      setOverlay(null);
+      flashToast("Exercício removido");
+    },
+    [bumpTreinoDates, refresh, flashToast],
+  );
+
+  const registrarCarga = useCallback(
+    async (input: {
+      studentId: string;
+      exerciseId: string;
+      workoutItemId: string;
+      date: string;
+      weight: number;
+      reps: number | null;
+      sets: number | null;
+    }) => {
+      await queries.addLoadLog(input);
+      await bumpTreinoDates(input.studentId);
+      await refresh();
+      flashToast("Carga registrada");
+    },
+    [bumpTreinoDates, refresh, flashToast],
+  );
+
+  const deleteLoadLog = useCallback(
+    async (logId: string) => {
+      await queries.deleteLoadLog(logId);
+      await refresh();
+      flashToast("Registro excluído");
+    },
+    [refresh, flashToast],
+  );
+
   const value: AppContextValue = {
     userId,
     students,
@@ -308,6 +398,11 @@ export function AppProvider({
     deleteStudent,
     deletePayment,
     deleteExpense,
+    addWorkoutItem,
+    updateWorkoutItem,
+    deleteWorkoutItem,
+    registrarCarga,
+    deleteLoadLog,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
