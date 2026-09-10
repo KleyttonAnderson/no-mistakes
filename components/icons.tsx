@@ -6,6 +6,14 @@ export function ChevronRight({ color = "#f3f2f2", opacity = 0.5 }: { color?: str
   );
 }
 
+export function PencilIcon({ color = "currentColor", size = 14 }: { color?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M11.3 2.3a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1 0 1.4L5.4 12.9l-2.7.7.7-2.7 8-8z" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ChevronLeftSmall({ color = "currentColor" }: { color?: string }) {
   return (
     <svg width="8" height="14" viewBox="0 0 8 14">

@@ -82,6 +82,40 @@ export async function insertStudent(
   if (error) throw error;
 }
 
+export async function updateStudent(
+  studentId: string,
+  input: {
+    name: string;
+    phone: string;
+    type: "Online" | "Presencial";
+    status: "Ativo" | "Inativo";
+    plan: string;
+    value: number;
+    start_date: string;
+    next_due_date: string;
+    last_training_update: string | null;
+    next_training_update: string | null;
+  },
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("students")
+    .update({
+      name: input.name,
+      phone: input.phone,
+      type: input.type,
+      status: input.status,
+      plan: input.plan,
+      value: input.value,
+      start_date: input.start_date,
+      next_due_date: input.next_due_date,
+      last_training_update: input.type === "Online" ? input.last_training_update : null,
+      next_training_update: input.type === "Online" ? input.next_training_update : null,
+    })
+    .eq("id", studentId);
+  if (error) throw error;
+}
+
 export async function registrarPagamento(input: {
   studentId: string;
   value: number;

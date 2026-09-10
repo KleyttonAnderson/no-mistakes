@@ -81,6 +81,21 @@ interface AppContextValue {
   deleteStudent: (studentId: string) => Promise<void>;
   deletePayment: (paymentId: string) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
+  updateStudent: (
+    studentId: string,
+    input: {
+      name: string;
+      phone: string;
+      type: "Online" | "Presencial";
+      status: "Ativo" | "Inativo";
+      plan: string;
+      value: number;
+      startDate: string;
+      nextDueDate: string;
+      lastTrainingUpdate: string | null;
+      nextTrainingUpdate: string | null;
+    },
+  ) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -256,6 +271,41 @@ export function AppProvider({
     [userId, refresh],
   );
 
+  const updateStudent = useCallback(
+    async (
+      studentId: string,
+      input: {
+        name: string;
+        phone: string;
+        type: "Online" | "Presencial";
+        status: "Ativo" | "Inativo";
+        plan: string;
+        value: number;
+        startDate: string;
+        nextDueDate: string;
+        lastTrainingUpdate: string | null;
+        nextTrainingUpdate: string | null;
+      },
+    ) => {
+      await queries.updateStudent(studentId, {
+        name: input.name,
+        phone: input.phone,
+        type: input.type,
+        status: input.status,
+        plan: input.plan,
+        value: input.value,
+        start_date: input.startDate,
+        next_due_date: input.nextDueDate,
+        last_training_update: input.lastTrainingUpdate,
+        next_training_update: input.nextTrainingUpdate,
+      });
+      await refresh();
+      setOverlay({ type: "ficha", studentId });
+      flashToast("Aluno atualizado");
+    },
+    [refresh, flashToast],
+  );
+
   const deleteStudent = useCallback(
     async (studentId: string) => {
       await queries.deleteStudent(studentId);
@@ -317,6 +367,7 @@ export function AppProvider({
     deleteStudent,
     deletePayment,
     deleteExpense,
+    updateStudent,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

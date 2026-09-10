@@ -5,7 +5,7 @@ import { ATIVO_C, CARD, CARD_SHADOW_SM, GRADIENT_ACCENT, GLOW_ACCENT, INATIVO_C,
 import { fmtBRL, fmtDateShort } from "@/lib/format";
 import { paymentStatus, tagStyle, treinoStatus } from "@/lib/status";
 import { Avatar } from "@/components/Avatar";
-import { BackIcon } from "@/components/icons";
+import { BackIcon, PencilIcon } from "@/components/icons";
 
 export function Ficha({ studentId }: { studentId: string }) {
   const { students, openOverlay, marcarTreino, deleteStudent } = useApp();
@@ -38,6 +38,12 @@ export function Ficha({ studentId }: { studentId: string }) {
         <div style={{ fontSize: 19, fontWeight: 800, color: TEXT, flex: 1 }}>{st.name}</div>
         <div style={{ fontSize: 10.5, fontWeight: 800, padding: "4px 10px", borderRadius: 999, color: statusDotColor, background: "rgba(243,242,242,0.08)" }}>
           {st.status}
+        </div>
+        <div
+          onClick={() => openOverlay({ type: "editarAluno", studentId: st.id })}
+          style={{ cursor: "pointer", padding: 8, borderRadius: 12, background: CARD, color: "rgba(243,242,242,0.8)" }}
+        >
+          <PencilIcon />
         </div>
       </div>
 
