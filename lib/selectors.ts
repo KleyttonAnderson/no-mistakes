@@ -77,6 +77,7 @@ export interface Movement {
   positive: boolean;
   kind: "payment" | "expense";
   sourceId: string;
+  method: string | null;
 }
 
 export function movementsForMonth(
@@ -101,6 +102,7 @@ export function movementsForMonth(
           positive: true,
           kind: "payment",
           sourceId: p.id,
+          method: p.method,
         }),
       ),
   );
@@ -117,6 +119,7 @@ export function movementsForMonth(
         positive: false,
         kind: "expense",
         sourceId: e.id,
+        method: e.payment_method,
       }),
     );
   movements.sort((a, b) => b.date.localeCompare(a.date));

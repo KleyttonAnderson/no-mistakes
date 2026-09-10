@@ -108,7 +108,14 @@ export async function registrarPagamento(input: {
 
 export async function insertExpense(
   userId: string,
-  input: { description: string; value: number; date: string; category: string; recurring: boolean },
+  input: {
+    description: string;
+    value: number;
+    date: string;
+    category: string;
+    recurring: boolean;
+    payment_method: string | null;
+  },
 ) {
   const supabase = createClient();
   const { error } = await supabase.from("expenses").insert({
@@ -118,6 +125,7 @@ export async function insertExpense(
     date: input.date,
     category: input.category,
     recurring: input.recurring,
+    payment_method: input.payment_method,
   });
   if (error) throw error;
 }

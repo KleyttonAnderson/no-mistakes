@@ -2,14 +2,18 @@
 
 import { useState } from "react";
 import { useApp } from "@/lib/app-context";
-import { CARD, GLOW_ACCENT, GRADIENT_ACCENT, MUTED, TEXT, categoryColor } from "@/lib/colors";
+import { CARD, GLOW_ACCENT, GRADIENT_ACCENT, MUTED, TEXT, categoryColor, expenseMethodColor } from "@/lib/colors";
 import { OverlayHeader } from "@/components/overlays/OverlayHeader";
+import type { ExpenseMethod } from "@/lib/types";
+
+const EXPENSE_METHODS: ExpenseMethod[] = ["PIX", "Transferência", "Crédito Nubank", "Crédito Inter"];
 
 export function NovoGasto() {
   const { categories, today, novoGasto, addCategoria } = useApp();
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [data, setData] = useState(today);
+  const [formaPagamento, setFormaPagamento] = useState<ExpenseMethod | null>(null);
   const [categoria, setCategoria] = useState(categories[0]?.name ?? "");
   const [recorrente, setRecorrente] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
@@ -34,7 +38,14 @@ export function NovoGasto() {
     if (!descricao || !valor) return;
     setSubmitting(true);
     try {
-      await novoGasto({ description: descricao, value: Number(valor), date: data, category: categoria, recurring: recorrente });
+      await novoGasto({
+        description: descricao,
+        value: Number(valor),
+        date: data,
+        category: categoria,
+        recurring: recorrente,
+        paymentMethod: formaPagamento,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -64,6 +75,25 @@ export function NovoGasto() {
 
       <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Data</div>
       <input type="date" value={data} onChange={(e) => setData(e.target.value)} style={{ ...inputStyle, colorScheme: "dark" }} />
+
+      <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+        Forma de pagamento
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 18 }}>
+        {EXPENSE_METHODS.map((m) => {
+          const active = formaPagamento === m;
+          const c = expenseMethodColor(m);
+          return (
+            <div
+              key={m}
+              onClick={() => setFormaPagamento(active ? null : m)}
+              style={{ textAlign: "center", padding: "12px 4px", borderRadius: 12, fontSize: 13, fontWeight: 800, cursor: "pointer", background: active ? c : "rgba(243,242,242,0.06)", color: active ? "#141312" : c }}
+            >
+              {m}
+            </div>
+          );
+        })}
+      </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em" }}>Categoria</div>

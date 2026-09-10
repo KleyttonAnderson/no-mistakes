@@ -24,6 +24,17 @@ export const METHOD_COLORS: Record<string, string> = {
   Outro: "#ff6b4a",
 };
 
+export const EXPENSE_METHOD_COLORS: Record<string, string> = {
+  PIX: "#22e08a",
+  "Transferência": "#4a90e2",
+  "Crédito Nubank": "#820ad1",
+  "Crédito Inter": "#ff7a00",
+};
+
+export function expenseMethodColor(m: string | null | undefined) {
+  return m ? (EXPENSE_METHOD_COLORS[m] ?? FAINT) : FAINT;
+}
+
 export const CAT_PALETTE = [
   "#3ec6ff",
   "#7c6cff",
