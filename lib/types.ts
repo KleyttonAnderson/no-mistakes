@@ -69,6 +69,7 @@ export type OverlayState =
   | { type: "pagamento"; studentId?: string }
   | { type: "novoGasto" }
   | { type: "novoAluno" }
+  | { type: "editarAluno"; studentId: string }
   | { type: "planos" }
   | null;
 

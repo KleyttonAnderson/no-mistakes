@@ -5,6 +5,7 @@ import { Ficha } from "@/components/overlays/Ficha";
 import { Pagamento } from "@/components/overlays/Pagamento";
 import { NovoGasto } from "@/components/overlays/NovoGasto";
 import { NovoAluno } from "@/components/overlays/NovoAluno";
+import { EditarAluno } from "@/components/overlays/EditarAluno";
 import { Planos } from "@/components/overlays/Planos";
 
 export function OverlayHost() {
@@ -27,6 +28,7 @@ export function OverlayHost() {
       {overlay.type === "pagamento" && <Pagamento studentId={overlay.studentId} />}
       {overlay.type === "novoGasto" && <NovoGasto />}
       {overlay.type === "novoAluno" && <NovoAluno />}
+      {overlay.type === "editarAluno" && <EditarAluno studentId={overlay.studentId} />}
       {overlay.type === "planos" && <Planos />}
     </div>
   );
