@@ -41,6 +41,7 @@ create table if not exists public.expenses (
   date date not null,
   category text not null,
   recurring boolean not null default false,
+  payment_method text check (payment_method is null or payment_method in ('PIX', 'Transferência', 'Crédito Nubank', 'Crédito Inter')),
   created_at timestamptz not null default now()
 );
 

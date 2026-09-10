@@ -62,6 +62,7 @@ interface AppContextValue {
     date: string;
     category: string;
     recurring: boolean;
+    paymentMethod: string | null;
   }) => Promise<void>;
   novoAluno: (input: {
     name: string;
@@ -175,8 +176,16 @@ export function AppProvider({
       date: string;
       category: string;
       recurring: boolean;
+      paymentMethod: string | null;
     }) => {
-      await queries.insertExpense(userId, input);
+      await queries.insertExpense(userId, {
+        description: input.description,
+        value: input.value,
+        date: input.date,
+        category: input.category,
+        recurring: input.recurring,
+        payment_method: input.paymentMethod,
+      });
       await refresh();
       setOverlay(null);
       flashToast("Gasto adicionado");

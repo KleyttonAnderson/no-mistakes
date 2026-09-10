@@ -28,6 +28,8 @@ export interface Student {
   payments: Payment[];
 }
 
+export type ExpenseMethod = "PIX" | "Transferência" | "Crédito Nubank" | "Crédito Inter";
+
 export interface Expense {
   id: string;
   description: string;
@@ -35,6 +37,7 @@ export interface Expense {
   date: string;
   category: string;
   recurring: boolean;
+  payment_method: ExpenseMethod | null;
 }
 
 export interface Category {

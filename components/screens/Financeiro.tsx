@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useApp } from "@/lib/app-context";
 import { CARD, CARD_SHADOW, CARD_SHADOW_SM, GRADIENT_ACCENT, MUTED, TEXT } from "@/lib/colors";
-import { fmtBRL, fmtDateShort, monthLabel } from "@/lib/format";
+import { fmtBRL, fmtDateShort, monthKey, monthLabel } from "@/lib/format";
 import { categoryFunnel, movementsForMonth, sumExpensesForMonth, sumPaymentsForMonth, activeStudents } from "@/lib/selectors";
 import { ChevronLeftSmall, ChevronRightSmall, TrashIcon } from "@/components/icons";
 import type { Movement } from "@/lib/selectors";
@@ -11,6 +11,7 @@ import type { Movement } from "@/lib/selectors";
 export function Financeiro() {
   const { students, expenses, categories, financeMonth, prevMonth, nextMonth, openOverlay, deletePayment, deleteExpense } =
     useApp();
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   function handleDeleteMovement(m: Movement) {
     const label = m.kind === "payment" ? "este pagamento" : "este gasto";
@@ -94,17 +95,49 @@ export function Financeiro() {
             Gastos por categoria
           </div>
           <div style={{ borderRadius: 16, background: CARD, padding: "14px 16px", marginBottom: 22, boxShadow: CARD_SHADOW_SM }}>
-            {funnel.map((cat) => (
-              <div key={cat.name} style={{ marginBottom: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: TEXT }}>{cat.name}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: cat.color }}>{cat.totalFmt}</span>
+            {funnel.map((cat) => {
+              const expanded = expandedCategory === cat.name;
+              const items = expanded
+                ? expenses
+                    .filter((e) => monthKey(e.date) === financeMonth && e.category === cat.name)
+                    .sort((a, b) => b.date.localeCompare(a.date))
+                : [];
+              return (
+                <div key={cat.name} style={{ marginBottom: 12 }}>
+                  <div
+                    onClick={() => setExpandedCategory(expanded ? null : cat.name)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: TEXT }}>{cat.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: cat.color }}>{cat.totalFmt}</span>
+                    </div>
+                    <div style={{ height: 7, borderRadius: 999, background: "rgba(243,242,242,0.08)", overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: 999, background: cat.color, width: `${cat.pct}%` }} />
+                    </div>
+                  </div>
+                  {expanded && (
+                    <div style={{ marginTop: 10, paddingLeft: 4 }}>
+                      {items.map((e) => (
+                        <div key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid rgba(243,242,242,0.08)" }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: TEXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {e.description}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: "rgba(243,242,242,0.5)", marginTop: 2 }}>
+                              {fmtDateShort(e.date)}{e.payment_method ? ` · ${e.payment_method}` : ""}
+                            </div>
+                          </div>
+                          <div className="tabular-nums" style={{ fontSize: 13, fontWeight: 700, color: TEXT, flexShrink: 0 }}>
+                            {fmtBRL(e.value)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div style={{ height: 7, borderRadius: 999, background: "rgba(243,242,242,0.08)", overflow: "hidden" }}>
-                  <div style={{ height: "100%", borderRadius: 999, background: cat.color, width: `${cat.pct}%` }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
@@ -123,6 +156,7 @@ export function Financeiro() {
               </div>
               <div style={{ fontSize: 12, color: m.tagColor, marginTop: 2, fontWeight: 700 }}>
                 {fmtDateShort(m.date)} · {m.tag}
+                {m.kind === "expense" && m.method ? ` · ${m.method}` : ""}
               </div>
             </div>
           </div>
