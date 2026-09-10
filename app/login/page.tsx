@@ -6,7 +6,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { ACCENT, CARD, GRADIENT_ACCENT, GLOW_ACCENT, MUTED, TEXT } from "@/lib/colors";
 
-type Mode = "login" | "signup";
+type Mode = "login" | "signup" | "recover";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function LoginPage() {
         if (error) throw error;
         router.push("/");
         router.refresh();
-      } else {
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -48,6 +48,12 @@ export default function LoginPage() {
         });
         if (error) throw error;
         setInfo("Conta criada. Verifique seu e-mail para confirmar o acesso.");
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+        if (error) throw error;
+        setInfo("Enviamos um link para redefinir sua senha. Verifique seu e-mail.");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Algo deu errado.");
@@ -101,7 +107,7 @@ export default function LoginPage() {
           style={{ background: CARD, borderRadius: 24, padding: 24, boxShadow: "0 14px 34px rgba(0,0,0,0.4)" }}
         >
           <div style={{ fontSize: 18, fontWeight: 800, color: TEXT, marginBottom: 18 }}>
-            {mode === "login" ? "Entrar" : "Criar conta"}
+            {mode === "login" ? "Entrar" : mode === "signup" ? "Criar conta" : "Recuperar senha"}
           </div>
 
           <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
@@ -116,18 +122,36 @@ export default function LoginPage() {
             placeholder="voce@email.com"
           />
 
-          <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
-            Senha
-          </div>
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ ...inputStyle, marginBottom: 20 }}
-            placeholder="••••••••"
-          />
+          {mode !== "recover" && (
+            <>
+              <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
+                Senha
+              </div>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ ...inputStyle, marginBottom: 8 }}
+                placeholder="••••••••"
+              />
+            </>
+          )}
+
+          {mode === "login" && (
+            <div
+              onClick={() => {
+                setMode("recover");
+                setError(null);
+                setInfo(null);
+              }}
+              style={{ textAlign: "right", fontSize: 12.5, color: MUTED, cursor: "pointer", marginBottom: 12 }}
+            >
+              Esqueci minha senha
+            </div>
+          )}
+          {mode !== "login" && <div style={{ marginBottom: 12 }} />}
 
           {error && (
             <div style={{ color: ACCENT, fontSize: 13, fontWeight: 600, marginBottom: 14 }}>{error}</div>
@@ -154,7 +178,13 @@ export default function LoginPage() {
               boxShadow: GLOW_ACCENT,
             }}
           >
-            {loading ? "Aguarde..." : mode === "login" ? "Entrar" : "Cadastrar"}
+            {loading
+              ? "Aguarde..."
+              : mode === "login"
+                ? "Entrar"
+                : mode === "signup"
+                  ? "Cadastrar"
+                  : "Enviar link de recuperação"}
           </button>
 
           <div
@@ -165,10 +195,14 @@ export default function LoginPage() {
             }}
             style={{ textAlign: "center", marginTop: 18, fontSize: 13, color: MUTED, cursor: "pointer" }}
           >
-            {mode === "login" ? (
+            {mode === "login" && (
               <>Não tem conta? <span style={{ color: "#ff9783", fontWeight: 700 }}>Cadastre-se</span></>
-            ) : (
+            )}
+            {mode === "signup" && (
               <>Já tem conta? <span style={{ color: "#ff9783", fontWeight: 700 }}>Entrar</span></>
+            )}
+            {mode === "recover" && (
+              <>Lembrou a senha? <span style={{ color: "#ff9783", fontWeight: 700 }}>Entrar</span></>
             )}
           </div>
         </form>
